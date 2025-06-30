@@ -39,50 +39,48 @@ const ArmarPuestos: React.FC<ArmarPuestosProps> = ({ isOpen, onClose, onCrearSer
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(20,20,20,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-      <div style={{ background: '#111', color: '#fff', padding: 24, borderRadius: 8, minWidth: 350, boxShadow: '0 4px 24px rgba(0,0,0,0.4)' }}>
-        <h2>Armar Puestos</h2>
-        <label>
+    <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-60 flex items-center justify-center z-[1000]">
+      <div className="bg-white text-black p-6 rounded-lg min-w-[350px] shadow-2xl border-2 border-gray-300 relative">
+        <h2 className="text-xl font-bold mb-4">Armar Puestos</h2>
+        <label className="block mb-2">
           Cantidad de puestos:
-          <input type="number" min={2} max={4} value={puestos} onChange={e => setPuestos(Number(e.target.value))} />
+          <input type="number" min={2} max={4} value={puestos} onChange={e => setPuestos(Number(e.target.value))} className="ml-2 p-1 rounded border text-black" />
         </label>
-        <br />
-        <label>
+        <label className="block mb-2">
           Horario de ingreso:
-          <input type="time" value={ingreso} onChange={e => setIngreso(e.target.value)} />
+          <input type="time" value={ingreso} onChange={e => setIngreso(e.target.value)} className="ml-2 p-1 rounded border text-black" />
         </label>
-        <br />
-        <label>
+        <label className="block mb-2">
           Horario de finalización:
-          <input type="time" value={fin} onChange={e => setFin(e.target.value)} />
+          <input type="time" value={fin} onChange={e => setFin(e.target.value)} className="ml-2 p-1 rounded border text-black" />
         </label>
-        <br />
-        <div>
+        <div className="mb-4">
           <strong>Integrantes:</strong>
           {integrantes.map((int, idx) => (
-            <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+            <div key={idx} className="flex gap-2 mb-1">
               <input
                 type="text"
                 placeholder="Nombre"
                 value={int.nombre}
                 onChange={e => handleIntegranteChange(idx, 'nombre', e.target.value)}
+                className="p-1 rounded border text-black"
               />
               <input
                 type="text"
                 placeholder="Apellido"
                 value={int.apellido}
                 onChange={e => handleIntegranteChange(idx, 'apellido', e.target.value)}
+                className="p-1 rounded border text-black"
               />
               {integrantes.length > 1 && (
-                <button onClick={() => quitarIntegrante(idx)}>-</button>
+                <button onClick={() => quitarIntegrante(idx)} className="bg-red-600 text-white px-2 rounded">-</button>
               )}
             </div>
           ))}
-          <button onClick={agregarIntegrante}>Agregar integrante</button>
+          <button onClick={agregarIntegrante} className="bg-blue-600 text-white px-2 py-1 rounded mt-2">Agregar integrante</button>
         </div>
-        <br />
-        <button onClick={handleCrear}>Crear servicio</button>
-        <button onClick={onClose} style={{ marginLeft: 8 }}>Cancelar</button>
+        <button onClick={handleCrear} className="bg-green-600 text-white px-4 py-2 rounded">Crear servicio</button>
+        <button onClick={onClose} className="ml-2 bg-gray-600 text-white px-4 py-2 rounded">Cancelar</button>
       </div>
     </div>
   );

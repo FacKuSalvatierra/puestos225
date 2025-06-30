@@ -1,45 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import Navbar from './components/Navbar'
+import TablaTurnos from './components/TablaTurnos'
 import ArmarPuestos from './ArmarPuestos'
-import './App.css'
+import { dividirHorario } from './utils/horarios'
+import type { Turno } from './utils/horarios'
 
 interface Integrante {
   nombre: string;
   apellido: string;
-}
-
-interface Turno {
-  integrante: Integrante;
-  puesto: number;
-  desde: string;
-  hasta: string;
-}
-
-function dividirHorario(ingreso: string, fin: string, integrantes: Integrante[], puestos: number): Turno[] {
-  // Convertir a minutos
-  const [h1, m1] = ingreso.split(":").map(Number);
-  const [h2, m2] = fin.split(":").map(Number);
-  let minutosInicio = h1 * 60 + m1;
-  let minutosFin = h2 * 60 + m2;
-  if (minutosFin <= minutosInicio) minutosFin += 24 * 60; // Soporta turnos nocturnos
-  const duracionTotal = minutosFin - minutosInicio;
-  const duracionPorTurno = Math.floor(duracionTotal / integrantes.length);
-
-  let turnos: Turno[] = [];
-  let actual = minutosInicio;
-  integrantes.forEach((int, idx) => {
-    const desde = actual;
-    const hasta = idx === integrantes.length - 1 ? minutosFin : actual + duracionPorTurno;
-    for (let p = 1; p <= puestos; p++) {
-      turnos.push({
-        integrante: int,
-        puesto: p,
-        desde: minutosAHora(desde),
-        hasta: minutosAHora(hasta),
-      });
-    }
-    actual += duracionPorTurno;
-  });
-  return turnos;
 }
 
 function minutosAHora(min: number): string {
@@ -87,45 +55,15 @@ const App: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Servicio de Guardia</h1>
-      <button onClick={() => setModalAbierto(true)}>Armar Puestos</button>
-      <ArmarPuestos
-        isOpen={modalAbierto}
-        onClose={() => setModalAbierto(false)}
-        onCrearServicio={handleCrearServicio}
-      />
-      <div style={{ marginTop: 32 }}>
-        <h2>Turnos asignados</h2>
-        {turnos.length === 0 ? (
-          <p>No hay turnos asignados.</p>
-        ) : (
-          <>
-            <button onClick={exportarCSV} style={{ marginBottom: 12 }}>Exportar tabla</button>
-            <table border={1} cellPadding={6} style={{ borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th>Puesto</th>
-                  <th>Nombre</th>
-                  <th>Apellido</th>
-                  <th>Desde</th>
-                  <th>Hasta</th>
-                </tr>
-              </thead>
-              <tbody>
-                {turnos.map((t, i) => (
-                  <tr key={i}>
-                    <td>{t.puesto}</td>
-                    <td>{t.integrante.nombre}</td>
-                    <td>{t.integrante.apellido}</td>
-                    <td>{t.desde}</td>
-                    <td>{t.hasta}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
+      <Navbar onArmarPuestos={() => setModalAbierto(true)} />
+      <div className="p-6 max-w-3xl mx-auto">
+        <ArmarPuestos
+          isOpen={modalAbierto}
+          onClose={() => setModalAbierto(false)}
+          onCrearServicio={handleCrearServicio}
+        />
+        <TablaTurnos turnos={turnos} exportarCSV={exportarCSV} />
       </div>
     </div>
   );
