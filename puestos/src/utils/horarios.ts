@@ -19,40 +19,70 @@ export function dividirHorario(ingreso: string, fin: string, integrantes: Integr
   if (minutosFin <= minutosInicio) minutosFin += 24 * 60; // Soporta turnos nocturnos
   const duracionTotal = minutosFin - minutosInicio;
 
-  // El número de bloques es el menor entre puestos y integrantes
-  const bloques = Math.min(integrantes.length, puestos);
-  const duracionPorBloque = Math.floor(duracionTotal / bloques);
+  // Dividir en bloques de 60 minutos
+  const duracionBloque = 60;
+  const bloques = Math.ceil(duracionTotal / duracionBloque);
 
-  // Barajar aleatoriamente los integrantes
-  let integrantesBarajados = [...integrantes];
-  for (let i = integrantesBarajados.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [integrantesBarajados[i], integrantesBarajados[j]] = [integrantesBarajados[j], integrantesBarajados[i]];
-  }
+  // Historial de puestos por integrante
+  const historial: Record<string, Set<number>> = {};
+  integrantes.forEach(int => {
+    historial[int.nombre + ' ' + int.apellido] = new Set();
+  });
+
+  // Contador de asignaciones por integrante para repartir equitativamente
+  const asignaciones: Record<string, number> = {};
+  integrantes.forEach(int => {
+    asignaciones[int.nombre + ' ' + int.apellido] = 0;
+  });
 
   let turnos: Turno[] = [];
   let actual = minutosInicio;
+  let prevAsignados: Set<string> = new Set();
 
   for (let b = 0; b < bloques; b++) {
     const desde = actual;
-    let hasta = actual + duracionPorBloque;
-    if (b === bloques - 1) hasta = minutosFin;
-    // Asignar a cada puesto una persona distinta
-    for (let p = 0; p < puestos; p++) {
-      const idx = b * puestos + p;
-      const integrante = integrantesBarajados[idx];
-      if (integrante) {
-        turnos.push({
-          integrante,
-          puesto: p + 1,
-          desde: minutosAHora(desde),
-          hasta: minutosAHora(hasta),
-        });
-      } else {
-        // Si no hay suficiente gente, el puesto queda vacío (no se agrega turno)
-      }
+    let hasta = actual + duracionBloque;
+    if (hasta > minutosFin) hasta = minutosFin;
+
+    // Para este bloque, asignar a cada puesto un integrante que no haya estado en ese puesto
+    // y que tenga la menor cantidad de asignaciones y que NO haya estado en el bloque anterior
+    const disponibles = [...integrantes];
+    const asignadosEsteBloque: Integrante[] = [];
+    for (let p = 1; p <= puestos; p++) {
+      // Filtrar los que no hayan estado en este puesto y no hayan estado en el bloque anterior
+      const candidatos = disponibles.filter(int =>
+        !historial[int.nombre + ' ' + int.apellido].has(p) &&
+        !prevAsignados.has(int.nombre + ' ' + int.apellido)
+      );
+      // Si no hay candidatos, permitir a cualquiera que no haya estado en el bloque anterior
+      let seleccionables = candidatos.length > 0
+        ? candidatos
+        : disponibles.filter(int => !prevAsignados.has(int.nombre + ' ' + int.apellido));
+      // Si aún no hay suficientes, permitir a cualquiera
+      if (seleccionables.length === 0) seleccionables = disponibles;
+      // Elegir el que tenga menos asignaciones
+      seleccionables = seleccionables.sort((a, b) => asignaciones[a.nombre + ' ' + a.apellido] - asignaciones[b.nombre + ' ' + b.apellido]);
+      // Si hay empate, elegir aleatorio
+      const minAsign = asignaciones[seleccionables[0].nombre + ' ' + seleccionables[0].apellido];
+      const empatados = seleccionables.filter(int => asignaciones[int.nombre + ' ' + int.apellido] === minAsign);
+      const elegido = empatados[Math.floor(Math.random() * empatados.length)];
+      // Asignar
+      turnos.push({
+        integrante: elegido,
+        puesto: p,
+        desde: minutosAHora(desde),
+        hasta: minutosAHora(hasta),
+      });
+      historial[elegido.nombre + ' ' + elegido.apellido].add(p);
+      asignaciones[elegido.nombre + ' ' + elegido.apellido]++;
+      // Quitar de disponibles para este bloque
+      const idx = disponibles.findIndex(int => int.nombre === elegido.nombre && int.apellido === elegido.apellido);
+      if (idx !== -1) disponibles.splice(idx, 1);
+      asignadosEsteBloque.push(elegido);
     }
     actual = hasta;
+    // Guardar los asignados de este bloque para el siguiente
+    prevAsignados = new Set(asignadosEsteBloque.map(int => int.nombre + ' ' + int.apellido));
   }
   return turnos;
 }

@@ -10,13 +10,6 @@ interface Integrante {
   apellido: string;
 }
 
-function minutosAHora(min: number): string {
-  min = min % (24 * 60);
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-}
-
 const App: React.FC = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [turnos, setTurnos] = useState<Turno[]>([]);
