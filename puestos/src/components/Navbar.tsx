@@ -3,9 +3,10 @@ import useDarkMode from '../hooks/useDarkMode';
 
 interface NavbarProps {
   onArmarPuestos: () => void;
+  onIrABedel: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onArmarPuestos }) => {
+const Navbar: React.FC<NavbarProps> = ({ onArmarPuestos, onIrABedel }) => {
   const [darkMode, setDarkMode] = useDarkMode();
 
   return (
@@ -17,6 +18,12 @@ const Navbar: React.FC<NavbarProps> = ({ onArmarPuestos }) => {
           className="bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded text-white font-semibold"
         >
           Armar Puestos
+        </button>
+        <button
+          onClick={onIrABedel}
+          className="bg-green-600 hover:bg-green-700 transition px-4 py-2 rounded text-white font-semibold"
+        >
+          Bedel
         </button>
         <button
           onClick={() => setDarkMode(!darkMode)}

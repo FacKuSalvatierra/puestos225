@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import TablaTurnos from './components/TablaTurnos'
 import ArmarPuestos from './ArmarPuestos'
+import Bedel from './components/Bedel'
 import { dividirHorario } from './utils/horarios'
 import type { Turno } from './utils/horarios'
 
@@ -10,7 +11,10 @@ interface Integrante {
   apellido: string;
 }
 
+type Vista = 'servicio' | 'bedel';
+
 const App: React.FC = () => {
+  const [vistaActual, setVistaActual] = useState<Vista>('servicio');
   const [modalAbierto, setModalAbierto] = useState(false);
   const [turnos, setTurnos] = useState<Turno[]>([]);
 
@@ -47,16 +51,26 @@ const App: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const irABedel = () => {
+    setVistaActual('bedel');
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
-      <Navbar onArmarPuestos={() => setModalAbierto(true)} />
+      <Navbar onArmarPuestos={() => setModalAbierto(true)} onIrABedel={irABedel} />
       <div className="p-6 max-w-3xl mx-auto">
-        <ArmarPuestos
-          isOpen={modalAbierto}
-          onClose={() => setModalAbierto(false)}
-          onCrearServicio={handleCrearServicio}
-        />
-        <TablaTurnos turnos={turnos} exportarCSV={exportarCSV} />
+        {vistaActual === 'servicio' ? (
+          <>
+            <ArmarPuestos
+              isOpen={modalAbierto}
+              onClose={() => setModalAbierto(false)}
+              onCrearServicio={handleCrearServicio}
+            />
+            <TablaTurnos turnos={turnos} exportarCSV={exportarCSV} />
+          </>
+        ) : (
+          <Bedel />
+        )}
       </div>
     </div>
   );
